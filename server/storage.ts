@@ -1,5 +1,4 @@
 import { type User, type InsertUser } from "@shared/db-schema";
-import { randomUUID } from "crypto";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -12,9 +11,11 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private nextId: number;
 
   constructor() {
     this.users = new Map();
+    this.nextId = 1;
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -28,9 +29,15 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const id = this.nextId++;
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      email: insertUser.email ?? null,
+      fullName: insertUser.fullName ?? null,
+      createdAt: new Date() 
+    };
+    this.users.set(id.toString(), user);
     return user;
   }
 }
